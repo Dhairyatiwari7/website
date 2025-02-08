@@ -30,7 +30,7 @@ export default function LoginPage() {
     e.preventDefault();
     setErrorMessage("");
 
-    const endpoint = isLogin ? "/api/auth/login/route" : "/api/auth/signup/route";
+    const endpoint = isLogin ? "/api/auth/login" : "/api/auth/signup";
 
     try {
       const response = await fetch(endpoint, {

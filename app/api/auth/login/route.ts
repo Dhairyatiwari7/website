@@ -8,6 +8,8 @@ interface LoginRequestBody {
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
+  let client: MongoClient | null = null;
+
   try {
     const { username, password }: LoginRequestBody = await request.json();
 
@@ -16,7 +18,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     const uri = 'mongodb+srv://quickcare:quickcare@cluster0.qpo69.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'; // REPLACE THIS!
-    const client = new MongoClient(uri);
+    client = new MongoClient(uri);
 
     await client.connect();
     const db = client.db();
@@ -24,21 +26,22 @@ export async function POST(request: Request): Promise<NextResponse> {
     const user = await db.collection('User').findOne({ username });
 
     if (!user) {
-      await client.close();
       return NextResponse.json({ message: 'User not found' }, { status: 401 });
     }
 
     const passwordMatch: boolean = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      await client.close();
       return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
     }
 
-    await client.close();
     return NextResponse.json({ message: 'Login successful' }, { status: 200 });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ message: 'Login failed' }, { status: 500 });
+  } finally {
+    if (client) {
+      await client.close();
+    }
   }
 }
