@@ -21,14 +21,14 @@ export async function POST(request: Request): Promise<NextResponse> {
     await client.connect();
     const db = client.db();
 
-    const user = await db.collection('quickcare').findOne({ username });
+    const user = await db.collection('User').findOne({ username });
 
     if (!user) {
       await client.close();
       return NextResponse.json({ message: 'User not found' }, { status: 401 });
     }
 
-    const passwordMatch: boolean = await bcrypt.compare(password, User.password);
+    const passwordMatch: boolean = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
       await client.close();
