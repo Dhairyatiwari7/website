@@ -66,7 +66,7 @@ const MyComponent = () => {
       setErrorMessage('Network error occurred'); // Display network error
     }
   };
-
+}
 
 
   return (
