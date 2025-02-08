@@ -29,9 +29,6 @@ export default function LoginPage() {
   }, [])
 
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-
 const MyComponent = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
