@@ -13,17 +13,18 @@ export async function POST(request: Request): Promise<NextResponse> {
   try {
     const { username, password }: LoginRequestBody = await request.json();
 
-    if (!username || !password) {
+    if (!username ||!password) {
       return NextResponse.json({ message: 'Invalid input' }, { status: 400 });
     }
 
-    const uri = 'mongodb+srv://quickcare:quickcare@cluster0.qpo69.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'; // REPLACE THIS!
+    const uri = 'mongodb+srv://quickcare:quickcare@cluster0.qpo69.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'; 
     client = new MongoClient(uri);
 
     await client.connect();
     const db = client.db();
 
-    const user = await db.collection('User').findOne({ username });
+    // Case-insensitive username search
+    const user = await db.collection('User').findOne({ username: { $regex: new RegExp(username, 'i') } });
 
     if (!user) {
       return NextResponse.json({ message: 'User not found' }, { status: 401 });

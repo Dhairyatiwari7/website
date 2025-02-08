@@ -35,9 +35,7 @@ export default function LoginPage() {
     try {
       const response = await fetch(endpoint, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password, role }),
       });
 
@@ -45,9 +43,17 @@ export default function LoginPage() {
 
       if (response.ok) {
         console.log("Success:", data.message);
-        router.push("/");
+
+        // Save user data
+        localStorage.setItem("user", JSON.stringify(data.user));
+
+        // Redirect based on role
+        if (data.user.role === "doctor") {
+          router.push("/home-direct/doctor");
+        } else {
+          router.push("/home-direct/user");
+        }
       } else {
-        console.error("Error:", data.message);
         setErrorMessage(data.message || "An error occurred");
       }
     } catch (error) {
