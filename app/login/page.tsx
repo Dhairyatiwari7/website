@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useAuth } from "../contexts/AuthContext";
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -61,7 +60,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-100 to-white">
       <div className="bg-white p-8 rounded-lg shadow-md w-96">
         <h2 className="login-content text-2xl font-bold text-center mb-6">
-          {isLogin ? "Login to HealthBuddy" : "Sign Up for HealthBuddy"}
+          {isLogin ? "Login to QuickCare" : "Sign Up for QuickCare"}
         </h2>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="login-content">
