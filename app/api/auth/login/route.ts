@@ -28,7 +28,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       return NextResponse.json({ message: 'User not found' }, { status: 401 });
     }
 
-    const passwordMatch: boolean = await bcrypt.compare(password, user.password);
+    const passwordMatch: boolean = await bcrypt.compare(password, User.password);
 
     if (!passwordMatch) {
       await client.close();
