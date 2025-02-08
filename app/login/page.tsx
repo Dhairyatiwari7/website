@@ -28,15 +28,36 @@ export default function LoginPage() {
     })
   }, [])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (isLogin) {
-      await login(username, password)
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  const router = useRouter();
+
+  const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup';
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password, role }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      console.log('Success:', data.message);
+      router.push('/');
     } else {
-      await signup(username, password, role)
+      console.error('Error:', data.message);
     }
-    router.push("/")
+  } catch (error) {
+    console.error('Fetch error:', error);
   }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-100 to-white">
