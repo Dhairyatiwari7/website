@@ -44,14 +44,18 @@ export default function LoginPage() {
       if (response.ok) {
         console.log("Success:", data.message);
 
-        // Save user data
-        localStorage.setItem("user", JSON.stringify(data.user));
+        // Ensure user data exists before saving
+        if (data.user) {
+          localStorage.setItem("user", JSON.stringify(data.user));
 
-        // Redirect based on role
-        if (data.user.role === "doctor") {
-          router.push("/home-direct/doctor");
+          // Redirect based on role
+          if (data.user.role === "doctor") {
+            router.push("/home-direct/doctor");
+          } else {
+            router.push("/home-direct/user");
+          }
         } else {
-          router.push("/home-direct/user");
+          setErrorMessage("Unexpected server response. Please try again.");
         }
       } else {
         setErrorMessage(data.message || "An error occurred");
