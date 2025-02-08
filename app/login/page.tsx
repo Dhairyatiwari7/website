@@ -29,34 +29,47 @@ export default function LoginPage() {
   }, [])
 
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
+const MyComponent = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState(''); // Assuming you have a role
+  const [isLogin, setIsLogin] = useState(false); // Assuming you have a login status boolean
+  const [errorMessage, setErrorMessage] = useState('');
   const router = useRouter();
 
-  const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup';
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(''); // Clear any previous error messages
 
-  try {
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username, password, role }),
-    });
+    const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup';
 
-    const data = await response.json();
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password, role }),
+      });
 
-    if (response.ok) {
-      console.log('Success:', data.message);
-      router.push('/');
-    } else {
-      console.error('Error:', data.message);
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log('Success:', data.message);
+        router.push('/'); // Redirect to the home page
+      } else {
+        console.error('Error:', data.message);
+        setErrorMessage(data.message || 'An error occurred'); // Display error message
+      }
+    } catch (error) {
+      console.error('Fetch error:', error);
+      setErrorMessage('Network error occurred'); // Display network error
     }
-  } catch (error) {
-    console.error('Fetch error:', error);
-  }
-};
+  };
+
 
 
   return (
