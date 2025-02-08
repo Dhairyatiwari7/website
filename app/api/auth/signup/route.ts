@@ -20,7 +20,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     await client.connect();
     const db = client.db();
 
-    const existingUser = await db.collection('quickcare').findOne({ username });
+    const existingUser = await db.collection('User').findOne({ username });
 
     if (existingUser) {
       await client.close();
