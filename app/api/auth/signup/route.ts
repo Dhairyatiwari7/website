@@ -1,9 +1,14 @@
 import { MongoClient } from 'mongodb';
 import { NextResponse } from 'next/server';
 
-export async function POST(request) {
+interface RequestBody {
+  username: string;
+  password: string;
+}
+
+export async function POST(request: Request): Promise<NextResponse> {
   try {
-    const { username, password } = await request.json();
+    const { username, password }: RequestBody = await request.json();
 
     if (!username || !password) {
       return NextResponse.json({ message: 'Invalid input' }, { status: 400 });

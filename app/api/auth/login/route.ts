@@ -2,9 +2,14 @@ import { MongoClient } from 'mongodb';
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
 
-export async function POST(request) {
+interface LoginRequestBody {
+  username: string;
+  password: string;
+}
+
+export async function POST(request: Request): Promise<NextResponse> {
   try {
-    const { username, password } = await request.json();
+    const { username, password }: LoginRequestBody = await request.json();
 
     if (!username || !password) {
       return NextResponse.json({ message: 'Invalid input' }, { status: 400 });
@@ -23,7 +28,7 @@ export async function POST(request) {
       return NextResponse.json({ message: 'User not found' }, { status: 401 });
     }
 
-    const passwordMatch = await bcrypt.compare(password, user.password);
+    const passwordMatch: boolean = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
       await client.close();
