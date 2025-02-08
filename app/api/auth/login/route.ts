@@ -21,7 +21,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     await client.connect();
     const db = client.db();
 
-    const user = await db.collection('users').findOne({ username });
+    const user = await db.collection('quickcare').findOne({ username });
 
     if (!user) {
       await client.close();
