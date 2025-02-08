@@ -20,7 +20,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     await client.connect();
     const db = client.db();
 
-    const existingUser = await db.collection('users').findOne({ username });
+    const existingUser = await db.collection('quickcare').findOne({ username });
 
     if (existingUser) {
       await client.close();
@@ -30,7 +30,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     // Hash the password before saving
     const hashedPassword = password; // Replace with bcrypt.hash(password, salt);
 
-    const result = await db.collection('users').insertOne({
+    const result = await db.collection('User').insertOne({
       username,
       password: hashedPassword,
     });
