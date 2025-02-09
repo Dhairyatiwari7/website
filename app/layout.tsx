@@ -3,6 +3,7 @@ import { Montserrat, Merriweather } from "next/font/google"
 import Navbar from "./components/Navbar"
 import Footer from "./components/Footer"
 import { AuthProvider } from "./contexts/AuthContext"
+import { SessionProvider } from "next-auth/react"
 import type React from "react"
 
 const montserrat = Montserrat({
@@ -29,13 +30,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${montserrat.variable} ${merriweather.variable}`}>
-        <AuthProvider>
-          <Navbar />
-          <main className="min-h-screen bg-gradient-to-br from-sky-100 to-white">{children}</main>
-          <Footer />
-        </AuthProvider>
+        <SessionProvider>
+          <AuthProvider>
+            <Navbar />
+            <main className="min-h-screen bg-gradient-to-br from-sky-100 to-white">{children}</main>
+            <Footer />
+          </AuthProvider>
+        </SessionProvider>
       </body>
     </html>
   )
 }
-
