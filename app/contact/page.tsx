@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
-// Rest of the component code remains exactly the same...
 export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<{
@@ -16,33 +15,40 @@ export default function ContactPage() {
     message: string;
   }>({ type: null, message: '' });
 
-  // Rest of the component implementation remains exactly the same...
-  // I'll include the complete code for clarity
+  const resetForm = (form: HTMLFormElement | null) => {
+    if (!form) return;
+    
+    try {
+      // Safely reset the form
+      form.reset();
+      
+      // Safely reset select elements
+      const selects = form.querySelectorAll('select');
+      selects?.forEach(select => {
+        const selectTrigger = select.nextElementSibling?.querySelector('[data-value]');
+        if (selectTrigger) {
+          selectTrigger.textContent = 'Select...';
+        }
+      });
 
-  const resetForm = (form: HTMLFormElement) => {
-    form.reset();
-    // Reset select elements to their default state
-    const selects = form.querySelectorAll('select');
-    selects.forEach(select => {
-      const selectTrigger = select.nextElementSibling?.querySelector('[data-value]');
-      if (selectTrigger) {
-        selectTrigger.textContent = 'Select...';
-      }
-    });
-    // Clear status message after 5 seconds
-    setTimeout(() => {
-      setSubmitStatus({ type: null, message: '' });
-    }, 5000);
+      // Clear status message after 5 seconds
+      setTimeout(() => {
+        setSubmitStatus({ type: null, message: '' });
+      }, 5000);
+    } catch (error) {
+      console.error('Error resetting form:', error);
+    }
   };
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSubmitting(true);
     
-    const formData = new FormData(event.currentTarget);
-    const data = Object.fromEntries(formData.entries());
-
     try {
+      const form = event.currentTarget;
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: {
@@ -58,9 +64,9 @@ export default function ContactPage() {
           type: 'success',
           message: 'Thank you for your response! We will get back to you soon.'
         });
-        resetForm(event.currentTarget as HTMLFormElement);
+        resetForm(form);
       } else {
-        throw new Error(result.message);
+        throw new Error(result.message || 'Failed to submit form');
       }
     } catch (error) {
       setSubmitStatus({
@@ -72,6 +78,7 @@ export default function ContactPage() {
     }
   };
 
+  // Rest of the component remains the same...
   const floatingIcons = [
     { Icon: Stethoscope, size: 48 },
     { Icon: Pill, size: 40 },
