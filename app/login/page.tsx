@@ -44,11 +44,9 @@ export default function LoginPage() {
       if (response.ok) {
         console.log("Success:", data.message);
 
-        // Ensure user data exists before saving
         if (data.user) {
           localStorage.setItem("user", JSON.stringify(data.user));
 
-          // Redirect based on role
           if (data.user.role === "doctor") {
             router.push("/home-direct/doctor");
           } else {
