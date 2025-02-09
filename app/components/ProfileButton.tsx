@@ -12,7 +12,7 @@ export default function ProfileButton() {
   const router = useRouter()
   const { logout } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
-  const dropdownRef = useRef(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (isOpen) {
@@ -25,6 +25,17 @@ export default function ProfileButton() {
     }
   }, [isOpen])
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
   const toggleDropdown = () => setIsOpen(!isOpen)
 
   const handleLogout = () => {
@@ -33,11 +44,11 @@ export default function ProfileButton() {
   }
 
   return (
-    <div className="relative">
+    <div className="relative z-[9999]"> {/* Increased z-index here */}
       <Button
         onClick={toggleDropdown}
         variant="ghost"
-        className="relative z-10 block rounded-md bg-white p-2 focus:outline-none"
+        className="relative z-[9999] block rounded-md bg-white p-2 focus:outline-none" // Increased z-index
       >
         <Avatar>
           <AvatarImage src="/placeholder-avatar.jpg" alt="User" />
@@ -48,7 +59,7 @@ export default function ProfileButton() {
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5"
+          className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 z-[9999]" // Added z-index here
         >
           <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
             My Profile
@@ -77,4 +88,3 @@ export default function ProfileButton() {
     </div>
   )
 }
-
