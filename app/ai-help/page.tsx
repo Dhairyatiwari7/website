@@ -16,7 +16,7 @@ export default function AIHelpPage() {
             src="https://app.dante-ai.com/embed/?kb_id=f915a2a9-d3d4-411a-a165-af28dc7b22ba&token=84bee53a-0a63-454b-b18d-0de7705f161d&modeltype=gpt-4-omnimodel-mini&tabs=false"
             allow="clipboard-write; clipboard-read; *;microphone *"
             width="400%"
-            height="450"
+            height="300%"
             frameBorder="0"
           ></iframe>
         </div>
