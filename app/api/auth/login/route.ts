@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
-import clientPromise from "../../../lib/db"; 
+import clientPromise from "../../../lib/db";
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {
@@ -9,8 +9,8 @@ export async function POST(request: Request): Promise<NextResponse> {
       return NextResponse.json({ message: "Invalid input" }, { status: 400 });
     }
 
-    const client = await clientPromise; 
-    const db = client.db("test");
+    const client = await clientPromise;
+    const db = client.db("test"); // Ensure the correct database name
     const user = await db.collection("User").findOne({ username: username.toLowerCase() });
 
     if (!user) {

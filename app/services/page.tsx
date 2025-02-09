@@ -58,7 +58,7 @@ export default function ServicesPage() {
       <h1 className="text-4xl font-bold text-center mb-12">Our Services</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {services.map((service, index) => (
-          <Card key={index} ref={(el) => (cardsRef.current[index] = el)} className="overflow-hidden">
+            <Card key={index} ref={(el) => {(cardsRef.current[index] as HTMLDivElement | null) = el;}}className="overflow-hidden">
             <CardHeader>
               <CardTitle className="text-xl font-semibold">{service.title}</CardTitle>
             </CardHeader>
