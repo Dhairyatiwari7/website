@@ -1,3 +1,5 @@
+"use client"
+
 import { useState } from "react"
 import { Stethoscope, Pill, HeartPulse, Ambulance, Phone, Mail, Clock, Activity, Thermometer, Syringe, Send, User, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -6,12 +8,16 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
+// Rest of the component code remains exactly the same...
 export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<{
     type: 'success' | 'error' | null;
     message: string;
   }>({ type: null, message: '' });
+
+  // Rest of the component implementation remains exactly the same...
+  // I'll include the complete code for clarity
 
   const resetForm = (form: HTMLFormElement) => {
     form.reset();
