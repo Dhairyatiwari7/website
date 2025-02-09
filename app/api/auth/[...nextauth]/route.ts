@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { connectToDB } from "../../../lib/db";
+import clientPromise from "../../../lib/db";
 import User from "../../../models/users";
 import bcrypt from "bcryptjs";
 export const authOptions = {
@@ -16,7 +16,7 @@ export const authOptions = {
             throw new Error("Please provide both email and password");
           }
   
-          await connectToDB();
+          const client = await clientPromise;
           const user = await User.findOne({ email: credentials.email });
           
           if (!user) {
@@ -33,14 +33,14 @@ export const authOptions = {
       }),
     ],
     callbacks: {
-      async session({ session, token }) {
+      async session({ session, token }: { session: any; token: any }) {
         if (token) {
           session.user.id = token.id;
           session.user.email = token.email;
         }
         return session;
       },
-      async jwt({ token, user }) {
+      async jwt({ token, user }: { token: any; user?: any }) {
         if (user) {
           token.id = user.id;
           token.email = user.email;
@@ -52,7 +52,7 @@ export const authOptions = {
       signIn: "/login",
     },
     session: {
-      strategy: "jwt",
+      strategy: 'jwt' as 'jwt',
     },
     secret: 'buXmQGB0ra2iR0UXQnJeqQrR04Arxs25nZ3vnd57VDM=',
   };

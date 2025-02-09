@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../api/auth/[...nextauth]/route";
-import { connectToDB } from "../../lib/db"; 
-import User from "@/models/user"; 
+import clientPromise from "../../lib/db"; 
+import User from "../../models/users"; 
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -10,7 +10,8 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  await connectToDB();
+  const client = await clientPromise;
+  await client.connect();
   const user = await User.findOne({ email: session.user?.email });
 
   if (!user) {
@@ -27,7 +28,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  await connectToDB();
+  const client = await clientPromise;
   const updatedUser = await User.findOneAndUpdate(
     { email: session.user?.email },
     { $set: body },
