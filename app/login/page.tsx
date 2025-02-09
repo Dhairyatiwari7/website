@@ -17,6 +17,13 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      router.push("/");
+    }
+  }, [router]);
+  
+  useEffect(() => {
     gsap.from(".login-content", {
       opacity: 0,
       y: 20,
@@ -43,15 +50,11 @@ export default function LoginPage() {
 
       if (response.ok) {
         console.log("Success:", data.message);
-
+  
         if (data.user) {
           localStorage.setItem("user", JSON.stringify(data.user));
-
-          if (data.user.role === "doctor") {
-            router.push("/home-direct/doctor");
-          } else {
-            router.push("/home-direct/user");
-          }
+          console.log("Redirecting...");
+          router.push("/");
         } else {
           setErrorMessage("Unexpected server response. Please try again.");
         }
