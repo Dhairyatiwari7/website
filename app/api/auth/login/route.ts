@@ -10,8 +10,8 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     const client = await clientPromise; 
-    const db = client.db("quickcare");
-    const user = await db.collection("user").findOne({ username: username.toLowerCase() });
+    const db = client.db("test");
+    const user = await db.collection("User").findOne({ username: username.toLowerCase() });
 
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
