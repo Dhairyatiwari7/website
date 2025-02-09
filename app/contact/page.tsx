@@ -34,27 +34,32 @@ interface FormData {
   symptoms: string
 }
 
+function setSuccessMessage(message: string) {
+  toast({ title: message, variant: "default" });
+}
+
 export default function ContactPage() {
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSubmitting(true);
-  
+
     const formData = new FormData(event.currentTarget);
     const data = Object.fromEntries(formData.entries());
-  
+
     try {
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-  
+
       const result = await response.json();
-  
+
       if (response.ok) {
         toast({ title: result.message });
+        setSuccessMessage("Thank you for your response! We will get back to you soon.");
         event.currentTarget.reset();
       } else {
         throw new Error(result.message);
@@ -62,11 +67,9 @@ export default function ContactPage() {
     } catch (error) {
       toast({ title: "Submission failed", description: (error as Error).message, variant: "destructive" });
     }
-  
+
     setIsSubmitting(false);
   };
-  
-  
 
   // Background icons
   const floatingIcons = [
@@ -77,7 +80,7 @@ export default function ContactPage() {
     { Icon: Thermometer, size: 42 },
     { Icon: Syringe, size: 38 },
     { Icon: Activity, size: 45 },
-  ]
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 via-blue-100 to-white relative overflow-hidden">
@@ -255,5 +258,7 @@ export default function ContactPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
+// function setSuccessMessage removed
+
