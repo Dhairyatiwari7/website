@@ -2,7 +2,9 @@
 
 import { useAuth } from "../contexts/AuthContext";
 import { useEffect } from "react";
+import Button from "../components/ProfileButton"; // Replace with the actual library
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function UserDashboard() {
   const { user } = useAuth();
@@ -23,6 +25,24 @@ export default function UserDashboard() {
         <p>Welcome, {user.username}!</p>
         <p>Book appointments and consult doctors.</p>
       </div>
+      <Link
+        href="/consultation"
+        className="bg-sky-500 text-white px-6 py-3 rounded-md hover:bg-sky-600 transition duration-300"
+      >
+        Start Consultation
+      </Link>
+      <Link
+        href="/appointment"
+        className="bg-white text-sky-500 border border-sky-500 px-6 py-3 rounded-md hover:bg-sky-50 transition duration-300"
+      >
+        Book an Appointment
+      </Link>
+      <Link
+        href="/ai-help"
+        className="bg-white text-sky-500 border border-sky-500 px-6 py-3 rounded-md hover:bg-sky-50 transition duration-300"
+      >
+        Chat with AI
+      </Link>
     </div>
   );
 }
