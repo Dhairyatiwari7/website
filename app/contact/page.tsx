@@ -66,6 +66,7 @@ export default function ContactPage() {
     setIsSubmitting(false);
   };
   
+  
 
   // Background icons
   const floatingIcons = [
