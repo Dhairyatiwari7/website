@@ -11,7 +11,7 @@ const navItems = [
   { name: "Home", href: "/" },
   { name: "About Us", href: "/about" },
   { name: "Our Services", href: "/services" },
-  { name: "Online Pharmacy", href: "https://www.apollopharmacy.in/", external: true },
+  { name: "Online Pharmacy", href: "/Onlinepharmacy"},
   { name: "Contact Us", href: "/contact" },
 ];
 
