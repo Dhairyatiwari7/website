@@ -1,12 +1,11 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { useEffect } from "react"
-import { usePathname } from "next/navigation"
-import { gsap } from "gsap"
-import ProfileButton from "./ProfileButton"
-import { useAuth } from "../contexts/AuthContext"
-import { ThemeToggle } from "@/components/theme-toggle"
+import Link from "next/link";
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { gsap } from "gsap";
+import ProfileButton from "./ProfileButton";
+import { useAuth } from "../contexts/AuthContext";
 
 const navItems = [
   { name: "Home", href: "/" },
@@ -14,11 +13,11 @@ const navItems = [
   { name: "Our Services", href: "/services" },
   { name: "Online Pharmacy", href: "https://www.apollopharmacy.in/", external: true },
   { name: "Contact Us", href: "/contact" },
-]
+];
 
 export default function Navbar() {
-  const { user, logout } = useAuth()
-  const pathname = usePathname()
+  const { user, logout } = useAuth();
+  const pathname = usePathname();
 
   useEffect(() => {
     gsap.from(".nav-item", {
@@ -27,8 +26,8 @@ export default function Navbar() {
       stagger: 0.1,
       duration: 1,
       ease: "power2.out",
-    })
-  }, [])
+    });
+  }, []);
 
   return (
     <nav className="bg-white shadow-md">
@@ -68,12 +67,11 @@ export default function Navbar() {
                   >
                     {item.name}
                   </Link>
-                ),
+                )
               )}
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <ThemeToggle />
             {user ? (
               <ProfileButton user={user} onLogout={logout} />
             ) : (
@@ -88,6 +86,5 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
-  )
+  );
 }
-
