@@ -44,11 +44,11 @@ export default function ProfileButton() {
   }
 
   return (
-    <div className="relative z-[9999]"> {/* Increased z-index here */}
+    <div className="relative z-[9999]"> 
       <Button
         onClick={toggleDropdown}
         variant="ghost"
-        className="relative z-[9999] block rounded-md bg-white p-2 focus:outline-none" // Increased z-index
+        className="relative z-[9999] block rounded-md bg-white p-2 focus:outline-none"
       >
         <Avatar>
           <AvatarImage src="/placeholder-avatar.jpg" alt="User" />
