@@ -38,25 +38,34 @@ export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setIsSubmitting(true)
+    event.preventDefault();
+    setIsSubmitting(true);
+  
+    const formData = new FormData(event.currentTarget);
+    const data = Object.fromEntries(formData.entries());
+  
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      toast({
-        title: "Message sent successfully!",
-        description: "We'll get back to you as soon as possible.",
-      })
-      const form = event.target as HTMLFormElement
-      form.reset()
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+  
+      const result = await response.json();
+  
+      if (response.ok) {
+        toast({ title: result.message });
+        event.currentTarget.reset();
+      } else {
+        throw new Error(result.message);
+      }
     } catch (error) {
-      toast({
-        title: "Error sending message",
-        description: "Please try again later.",
-        variant: "destructive",
-      })
+      toast({ title: "Submission failed", description: (error as Error).message, variant: "destructive" });
     }
-    setIsSubmitting(false)
-  }
+  
+    setIsSubmitting(false);
+  };
+  
 
   // Background icons
   const floatingIcons = [
