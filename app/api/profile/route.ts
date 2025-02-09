@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../api/auth/[...nextauth]/route";
-import clientPromise from "../../lib/db"; 
-import User from "../../models/users"; 
+import { authOptions } from "../auth/[...nextauth]/route";
+import clientPromise from "../../lib/db";
+import User from "../../models/users";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -29,6 +29,8 @@ export async function POST(req: Request) {
 
   const body = await req.json();
   const client = await clientPromise;
+  await client.connect();
+
   const updatedUser = await User.findOneAndUpdate(
     { email: session.user?.email },
     { $set: body },
