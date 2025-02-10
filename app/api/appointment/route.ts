@@ -1,10 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { connectToDB } from "../../lib/db";
 import Appointment from "../../models/appointment";
 import { getToken } from "next-auth/jwt";
-
-// Book appointment
-import { NextRequest } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
@@ -42,8 +39,7 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-export async function GET(req: NextRequest) {
-// Get appointments
+
 export async function GET(req: NextRequest) {
   try {
     await connectToDB();
