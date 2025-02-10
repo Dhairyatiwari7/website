@@ -16,8 +16,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user");
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(""); // ✅ FIXED: Defined setErrorMessage
-  const { login } = useAuth();
+  const [errorMessage, setErrorMessage] = useState("");
+  const { login, user } = useAuth(); // Also get the user state
   const router = useRouter();
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -25,13 +25,12 @@ export default function LoginPage() {
   const formRef = useRef<HTMLDivElement>(null);
   const roleFieldRef = useRef<HTMLDivElement>(null);
 
-  // Redirect if user is already logged in
+  // Check authentication status and redirect if needed
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      router.push("/");
+    if (user) {
+      router.replace("/dashboard"); // Use replace instead of push to prevent back button issues
     }
-  }, [router]);
+  }, [user, router]);
 
   // Initialize animations
   useEffect(() => {
@@ -43,11 +42,11 @@ export default function LoginPage() {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage(""); // Reset error message before request
-
-    const endpoint = isLogin ? "/api/auth/login" : "/api/auth/signup";
+    setErrorMessage("");
+    setIsLoading(true);
 
     try {
+      const endpoint = isLogin ? "/api/auth/login" : "/api/auth/signup";
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -57,24 +56,27 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
-        console.log("Success:", data.message);
-        if (data.user) {
-          localStorage.setItem("user", JSON.stringify(data.user));
-          router.push("/");
-        } else {
-          setErrorMessage("Unexpected server response. Please try again.");
-        }
+        await login(data.user); // Wait for login to complete
+        router.replace("/dashboard"); // Redirect to dashboard after successful login
       } else {
-        setErrorMessage(data.message || "An error occurred");
+        setErrorMessage(data.message || "Authentication failed");
       }
     } catch (error) {
-      console.error("Fetch error:", error);
+      console.error("Authentication error:", error);
       setErrorMessage("Network error occurred");
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  // If we're already authenticated, show nothing while redirecting
+  if (user) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-sky-100 relative overflow-hidden">
+      {/* Rest of your JSX remains the same */}
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10 bg-pattern" style={{ backgroundImage: `radial-gradient(circle at 10% 10%, #3B82F622 20%, transparent 20%)`, backgroundSize: "40px 40px" }} />
 
@@ -93,7 +95,7 @@ export default function LoginPage() {
             <p className="text-gray-600">{isLogin ? "Secure access to your health portal" : "Start your health journey today"}</p>
           </div>
 
-          {errorMessage && <p className="text-red-500 text-sm text-center mb-4">{errorMessage}</p>} {/* ✅ FIXED: Error Message Display */}
+          {errorMessage && <p className="text-red-500 text-sm text-center mb-4">{errorMessage}</p>}
 
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="login-content">
@@ -101,14 +103,31 @@ export default function LoginPage() {
                 <UserCircle className="h-4 w-4" />
                 Username
               </Label>
-              <Input type="text" id="username" value={username} onChange={(e) => setUsername(e.target.value)} className="mt-1 focus-visible:ring-blue-500" placeholder="Enter your username" />
+              <Input 
+                type="text" 
+                id="username" 
+                value={username} 
+                onChange={(e) => setUsername(e.target.value)} 
+                className="mt-1 focus-visible:ring-blue-500" 
+                placeholder="Enter your username"
+                required 
+              />
             </div>
 
             <div className="login-content">
               <Label htmlFor="password" className="flex items-center gap-2 text-gray-700">
                 Password
               </Label>
-              <Input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 focus-visible:ring-blue-500" placeholder="Enter your password" />
+              <Input 
+                type="password" 
+                id="password" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                className="mt-1 focus-visible:ring-blue-500" 
+                placeholder="Enter your password"
+                required
+                minLength={6}
+              />
             </div>
 
             {!isLogin && (
@@ -126,14 +145,31 @@ export default function LoginPage() {
               </div>
             )}
 
-            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 login-content" disabled={isLoading}>
-              {isLoading ? <div className="flex items-center justify-center gap-2"><div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Processing...</div> : isLogin ? "Sign In" : "Create Account"}
+            <Button 
+              type="submit" 
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 login-content" 
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Processing...
+                </div>
+              ) : (
+                isLogin ? "Sign In" : "Create Account"
+              )}
             </Button>
           </form>
 
           <p className="login-content text-center mt-6 text-gray-600">
             {isLogin ? "New here? " : "Already have an account? "}
-            <button onClick={() => setIsLogin(!isLogin)} className="text-blue-600 font-semibold hover:underline underline-offset-4">{isLogin ? "Create Account" : "Login Instead"}</button>
+            <button 
+              onClick={() => setIsLogin(!isLogin)} 
+              className="text-blue-600 font-semibold hover:underline underline-offset-4"
+              type="button"
+            >
+              {isLogin ? "Create Account" : "Login Instead"}
+            </button>
           </p>
         </div>
       </div>
