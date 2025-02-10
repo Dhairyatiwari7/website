@@ -10,19 +10,13 @@ export async function POST(req: Request) {
     await connectToDB();
 
     const { username, password } = await req.json();
-
-    const role = req.headers.get("role");
+    const role = req.headers.get("role")?.toLowerCase() || "user"; // Normalize role
 
     if (!username || !password) {
-      return NextResponse.json({ message: "Username, password are required" }, { status: 400 });
+      return NextResponse.json({ message: "Username and password are required" }, { status: 400 });
     }
 
-    let user;
-    if (role === "doctor") {
-      user = await Doctor.findOne({ username });
-    } else {
-      user = await User.findOne({ username });
-    }
+    let user = role === "doctor" ? await Doctor.findOne({ username }) : await User.findOne({ username });
 
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
@@ -33,9 +27,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
     }
 
-    const token = jwt.sign({ id: user._id, role }, process.env.JWT_SECRET as string, { expiresIn: "7d" });
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET is not defined");
+      return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+    }
 
-    return NextResponse.json({ message: "Login successful", token, user }, { status: 200 });
+    const token = jwt.sign({ id: user._id, role }, process.env.JWT_SECRET, { expiresIn: "7d" });
+
+    // Return filtered user data
+    const { password: _, ...userData } = user.toObject();
+
+    return NextResponse.json({ message: "Login successful", token, user: userData }, { status: 200 });
   } catch (error) {
     console.error("Error in login:", error);
     return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
