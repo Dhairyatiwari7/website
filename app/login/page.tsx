@@ -61,7 +61,6 @@ export default function LoginPage() {
         if (data.user) {
           localStorage.setItem("user", JSON.stringify(data.user));
           router.push("/");
-          window.location.reload();
         } else {
           setErrorMessage("Unexpected server response. Please try again.");
         }
