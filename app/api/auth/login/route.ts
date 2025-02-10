@@ -9,7 +9,9 @@ export async function POST(req: Request) {
   try {
     await connectToDB();
 
-    const { username, password, role } = await req.json();
+    const { username, password } = await req.json();
+
+    const role = req.headers.get("role");
 
     if (!username || !password) {
       return NextResponse.json({ message: "Username, password are required" }, { status: 400 });
