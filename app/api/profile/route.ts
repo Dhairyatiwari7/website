@@ -12,7 +12,7 @@ export async function GET() {
 
   const client = await clientPromise;
   await client.connect();
-  const user = await User.findOne({ email: session.user?.email });
+  const user = await User.findOne({ username: session.user?.username });
 
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });

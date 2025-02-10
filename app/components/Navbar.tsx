@@ -8,11 +8,11 @@ import ProfileButton from "./ProfileButton";
 import { useAuth } from "../contexts/AuthContext";
 
 const navItems = [
-  { name: "Home", href: "/" },
-  { name: "About Us", href: "/about" },
-  { name: "Our Services", href: "/services" },
-  { name: "Online Pharmacy", href: "/Onlinepharmacy"},
-  { name: "Contact Us", href: "/contact" },
+  { name: "Home", href: "/", external: false },
+  { name: "About Us", href: "/about", external: false },
+  { name: "Our Services", href: "/services", external: false },
+  { name: "Online Pharmacy", href: "/Onlinepharmacy", external: false },
+  { name: "Contact Us", href: "/contact", external: false },
 ];
 
 export default function Navbar() {

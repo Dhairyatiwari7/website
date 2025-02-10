@@ -1,33 +1,41 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcrypt";
-import clientPromise from "../../../lib/db";
+import { connectToDB } from "../../../lib/db";
+import User from "../../../models/users";
+import Doctor from "../../../models/doctors";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
-export async function POST(request: Request): Promise<NextResponse> {
+export async function POST(req: Request) {
   try {
-    const { username, password } = await request.json();
-    if (!username || !password) {
-      return NextResponse.json({ message: "Invalid input" }, { status: 400 });
+    await connectToDB();
+
+    const { username, password, role } = await req.json();
+
+    if (!username || !password || !role) {
+      return NextResponse.json({ message: "Username, password, and role are required" }, { status: 400 });
     }
 
-    const client = await clientPromise;
-    const db = client.db("test"); // Ensure the correct database name
-    const user = await db.collection("User").findOne({ username: username.toLowerCase() });
+    let user;
+    if (role === "doctor") {
+      user = await Doctor.findOne({ username });
+    } else {
+      user = await User.findOne({ username });
+    }
 
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
       return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
     }
 
-    return NextResponse.json(
-      { message: "Login successful", user: { username: user.username, role: user.role } },
-      { status: 200 }
-    );
+    const token = jwt.sign({ id: user._id, role }, process.env.JWT_SECRET as string, { expiresIn: "7d" });
+
+    return NextResponse.json({ message: "Login successful", token, user }, { status: 200 });
   } catch (error) {
-    console.error("Login Error:", error);
-    return NextResponse.json({ message: "Login failed" }, { status: 500 });
+    console.error("Error in login:", error);
+    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
   }
 }

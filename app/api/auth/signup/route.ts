@@ -1,52 +1,60 @@
-import { MongoClient } from "mongodb";
 import { NextResponse } from "next/server";
-import bcrypt from "bcrypt";
+import { connectToDB } from "../../../lib/db";
+import User from "../../../models/users";
+import Doctor from "../../../models/doctors";
+import bcrypt from "bcryptjs";
 
-interface RequestBody {
-  username: string;
-  password: string;
-  role: string;
-}
-
-export async function POST(request: Request): Promise<NextResponse> {
+export async function POST(req: Request) {
   try {
-    const { username, password, role }: RequestBody = await request.json();
+    await connectToDB();
+    const { username, password, role, ...details } = await req.json();
 
+    // Validate input
     if (!username || !password || !role) {
-      return NextResponse.json({ message: "Invalid input" }, { status: 400 });
+      return NextResponse.json(
+        { message: "All fields are required" },
+        { status: 400 }
+      );
     }
 
-    const uri =
-      "mongodb+srv://quickcare:quickcare@cluster0.qpo69.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"; // REPLACE THIS!
-    const client = new MongoClient(uri);
-
-    await client.connect();
-    const db = client.db();
-
-    const existingUser = await db.collection("User").findOne({ username });
-
+    // Check existing user
+    const existingUser = await (role === "doctor" ? Doctor : User)
+      .findOne({ username });
     if (existingUser) {
-      await client.close();
-      return NextResponse.json({ message: "User exists already!" }, { status: 409 });
+      return NextResponse.json(
+        { message: "Username already exists" },
+        { status: 400 }
+      );
     }
 
-    // Hash the password before saving
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const result = await db.collection("User").insertOne({
-      username,
-      password: hashedPassword,
-      role, // Store the role
-    });
+    // Create new entity
+    if (role === "doctor") {
+      const newDoctor = new Doctor({
+        username,
+        password: hashedPassword,
+        ...details
+      });
+      await newDoctor.save();
+    } else {
+      const newUser = new User({
+        username,
+        password: hashedPassword
+      });
+      await newUser.save();
+    }
 
-    await client.close();
-    return NextResponse.json({ 
-      message: "Created user!", 
-      user: { username, role } // Returning role as well
-    }, { status: 201 });
-
+    return NextResponse.json(
+      { message: "Account created successfully" },
+      { status: 201 }
+    );
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ message: "Error creating user!" }, { status: 500 });
+    console.error("Signup error:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
