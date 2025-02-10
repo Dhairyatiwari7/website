@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
     // Check both collections to determine user role
     let user = await User.findOne({ username });
-    let role = "user"; // Default role
+    let role = "user";
 
     if (!user) {
       user = await Doctor.findOne({ username });
