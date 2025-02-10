@@ -20,7 +20,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const decoded = jwt.decode(token);
         const storedUser = localStorage.getItem("user");
         if (decoded && storedUser) {
-          setUser({ ...JSON.parse(storedUser), role: decoded.role });
+          setUser({ ...JSON.parse(storedUser), role: (decoded as jwt.JwtPayload).role });
         }
       } catch (error) {
         console.error("Auth error:", error);
