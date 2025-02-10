@@ -22,7 +22,7 @@ export default function LoginPage() {
 
   // Redirect if user is already logged in
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
+    const storedUser = localStorage.getItem("User");
     if (storedUser) {
       router.push("/");
     }
@@ -52,7 +52,7 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.setItem("User", JSON.stringify(data.User));
         router.push("/");
         window.location.reload();
       } else {
@@ -61,7 +61,7 @@ export default function LoginPage() {
     } catch (error) {
       setErrorMessage("Network error occurred");
     } finally {
-      setIsLoading(false); // Stop loading
+      setIsLoading(false);
     }
   };
 
