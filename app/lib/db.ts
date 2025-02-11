@@ -1,43 +1,32 @@
-import { MongoClient } from "mongodb";
+import { MongoClient } from 'mongodb';
 
-const uri = 'mongodb+srv://quickcare:quickcare@cluster0.qpo69.mongodb.net/quickcare?retryWrites=true&w=majority&appName=Cluster0';
+const MONGODB_URI='mongodb+srv://quickcare:quickcare@cluster0.qpo69.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+const uri = MONGODB_URI;
+const options = {};
 
-// Check if URI is defined
-if (!uri) {
-  throw new Error("❌ MongoDB URI is missing!");
+let client;
+let clientPromise: Promise<MongoClient>;
+if (!MONGODB_URI) {
+  throw new Error('Please add your MongoDB URI to .env.local');
 }
 
 declare global {
-  var _mongoClientPromise: Promise<MongoClient> | undefined;
+  var _mongoClientPromise: Promise<MongoClient>;
 }
 
-let client: MongoClient;
-let clientPromise: Promise<MongoClient>;
-
-if (!global._mongoClientPromise) {
-  try {
-    client = new MongoClient(uri);
+if (process.env.NODE_ENV === 'development') {
+  if (!global._mongoClientPromise) {
+    client = new MongoClient(uri, options);
     global._mongoClientPromise = client.connect();
-    console.log("✅ Successfully connected to MongoDB");
-  } catch (error) {
-    console.error("❌ MongoDB Connection Error:", error);
-    throw new Error("Failed to connect to MongoDB");
   }
+  clientPromise = global._mongoClientPromise;
+} else {
+  client = new MongoClient(uri, options);
+  clientPromise = client.connect();
 }
 
-clientPromise = global._mongoClientPromise;
-
-// Function to get the database instance
-export const connectToDB = async () => {
-  try {
-    const client = await clientPromise;
-    const db = client.db("test");
-    console.log("✅ Database selected: test");
-    return db;
-  } catch (error) {
-    console.error("❌ Error connecting to database:", error);
-    throw new Error("Database connection failed");
-  }
-};
-
-export default clientPromise;
+export async function connectToDB() {
+  const client = await clientPromise;
+  const db = client.db(process.env.DB_NAME);
+  return { db, client };
+}

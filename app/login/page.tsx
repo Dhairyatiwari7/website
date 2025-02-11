@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { useRouter } from "next/navigation";
 import { gsap } from "gsap";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,10 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { HeartPulse, Stethoscope, UserCircle } from "lucide-react";
 
+import {useAuth } from "../contexts/AuthContext";
+
 export default function LoginPage() {
+  const { login, user } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -20,13 +23,11 @@ export default function LoginPage() {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Redirect if user is already logged in
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
+    if (user) {
       router.push("/");
     }
-  }, [router]);
+  }, [user, router]);
 
   // Initialize animations
   useEffect(() => {
@@ -36,35 +37,33 @@ export default function LoginPage() {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage(""); // Reset error
-    setIsLoading(true);  // Start loading
-
+    setErrorMessage("");
+    setIsLoading(true);
+  
     const endpoint = isLogin ? "/api/auth/login" : "/api/auth/signup";
     const payload = isLogin ? { username, password } : { username, password, role };
-
+  
     try {
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
+  
       const data = await response.json();
-
+  
       if (response.ok) {
-        localStorage.setItem("user", JSON.stringify(data.user));
+        login(data.token, data.user); 
         router.push("/");
-        window.location.reload();
       } else {
         setErrorMessage(data.message || "An error occurred");
       }
     } catch (error) {
       setErrorMessage("Network error occurred");
     } finally {
-      setIsLoading(false); // Stop loading
+      setIsLoading(false);
     }
   };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-sky-100 relative overflow-hidden">
       <div className="auth-card bg-white p-8 rounded-xl shadow-2xl w-96">

@@ -1,49 +1,62 @@
-import { NextResponse } from "next/server";
-import clientPromise from "../../../lib/db";
+import { connectToDB } from "../../../lib/db";
+import User from "../../../models/users";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { NextApiRequest, NextApiResponse } from "next";
 
-export async function POST(req: Request) {
+const JWT_SECRET = process.env.JWT_SECRET || "your_fallback_secret";
+
+interface LoginRequestBody {
+  username: string;
+  password: string;
+}
+
+interface LoginResponse {
+  message: string;
+  token?: string;
+  user?: {
+    id: string;
+    username: string;
+  };
+  role?: string;
+}
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<LoginResponse>
+) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Method not allowed" });
+  }
+
   try {
-    const client = await clientPromise;
-    const db = client.db("test"); 
-    const usersCollection = db.collection("User");
-    const doctorsCollection = db.collection("doctors");
+    const { username, password }: LoginRequestBody = req.body;
+    await connectToDB();
 
-    const { username, password, role } = await req.json();
-
-    if (!username || !password) {
-      return NextResponse.json({ message: "Username and password are required" }, { status: 400 });
-    }
-
-    let user;
-    if (role === "doctor") {
-      user = await doctorsCollection.findOne({ username });
-    } else {
-      user = await usersCollection.findOne({ username });
-    }
-
+    const user = await User.findOne({ username });
     if (!user) {
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    if (!process.env.JWT_SECRET) {
-      console.error("JWT_SECRET is not set");
-      return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
-    }
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
-    const token = jwt.sign({ id: user._id, role }, process.env.JWT_SECRET, { expiresIn: "7d" });
-
-    const { password: _, ...userData } = user; // Remove password from response
-
-    return NextResponse.json({ message: "Login successful", token, user: userData, role }, { status: 200 });
+    res.status(200).json({
+      message: "Login successful",
+      token,
+      user: { id: user._id.toString(), username: user.username },
+      role: user.role
+    });
   } catch (error) {
-    console.error("Error in login:", error);
-    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 }

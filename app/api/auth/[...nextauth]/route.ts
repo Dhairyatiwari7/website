@@ -1,61 +1,69 @@
 import NextAuth from "next-auth";
+import { Session } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import clientPromise from "../../../lib/db";
+import { connectToDB } from "../../../lib/db";
 import User from "../../../models/users";
 import bcrypt from "bcryptjs";
-export const authOptions = {
-    providers: [
-      CredentialsProvider({
-        name: "Credentials",
-        credentials: {
-          email: { label: "Email", type: "email", placeholder: "user@example.com" },
-          password: { label: "Password", type: "password" },
-        },
-        async authorize(credentials) {
-          if (!credentials?.email || !credentials?.password) {
-            throw new Error("Please provide both email and password");
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+    };
+  }
+}
+
+
+export default NextAuth({
+  providers: [
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        username: { label: "Username", type: "text" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        try {
+          await connectToDB();
+          if (!credentials) {
+            return null;
           }
-  
-          const client = await clientPromise;
-          const user = await User.findOne({ email: credentials.email });
-          
+          const user = await User.findOne({ username: credentials.username });
           if (!user) {
-            throw new Error("No user found with this email");
+            return null;
           }
-  
-          const isValidPassword = await bcrypt.compare(credentials.password, user.password);
-          if (!isValidPassword) {
-            throw new Error("Invalid password");
+          const isMatch = await bcrypt.compare(credentials.password, user.password);
+          if (!isMatch) {
+            return null;
           }
-  
-          return { id: user._id, name: user.name, email: user.email };
-        },
-      }),
-    ],
-    callbacks: {
-      async session({ session, token }: { session: any; token: any }) {
-        if (token) {
-          session.user.id = token.id;
-          session.user.email = token.email;
+          return { id: user._id, name: user.username };
+        } catch (error) {
+          console.error("Error in authorize:", error);
+          return null;
         }
-        return session;
-      },
-      async jwt({ token, user }: { token: any; user?: any }) {
-        if (user) {
-          token.id = user.id;
-          token.email = user.email;
+      }
+    })
+  ],
+  callbacks: {
+    jwt: async ({ token, user }) => {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+    session: async ({ session, token }) => {
+      if (token) {
+        if (session.user) {
+          session.user.id = token.id as string;
         }
-        return token;
-      },
-    },
-    pages: {
-      signIn: "/login",
-    },
-    session: {
-      strategy: 'jwt' as 'jwt',
-    },
-    secret: 'buXmQGB0ra2iR0UXQnJeqQrR04Arxs25nZ3vnd57VDM=',
-  };
-  
-  const handler = NextAuth(authOptions);
-  export { handler as GET, handler as POST };
+      }
+      return session;
+    }
+  },
+  pages: {
+    signIn: "/login",
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+});
