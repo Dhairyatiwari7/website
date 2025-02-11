@@ -63,11 +63,11 @@ export default function AppointmentPage() {
     });
   }, []);
 
-  const filteredDoctors = doctors?.filter(
+  const filteredDoctors = doctors.filter(
     (doctor) =>
-      doctor?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doctor?.speciality?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];  
+      doctor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doctor.speciality.toLowerCase().includes(searchTerm.toLowerCase())
+  );  
 
   const handleBookAppointment = async () => {
     if (!user) {

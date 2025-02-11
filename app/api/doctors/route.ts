@@ -9,7 +9,7 @@ export async function GET() {
     const db = client.db("test"); // Ensure this matches your database name
 
     console.log("🔎 Fetching doctors...");
-    const doctors = await db.collection("Doctor").find({}, { 
+    const doctors = await db.collection("doctors").find({}, { 
       projection: { 
         password: 0,
         _id: 1,
