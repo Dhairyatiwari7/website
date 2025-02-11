@@ -31,8 +31,8 @@ clientPromise = global._mongoClientPromise;
 export const connectToDB = async () => {
   try {
     const client = await clientPromise;
-    const db = client.db("test"); // Ensure you use the correct database name
-    console.log("✅ Database selected: quickcare");
+    const db = client.db("test");
+    console.log("✅ Database selected: test");
     return db;
   } catch (error) {
     console.error("❌ Error connecting to database:", error);
