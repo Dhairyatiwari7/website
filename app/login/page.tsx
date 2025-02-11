@@ -28,7 +28,7 @@ export default function LoginPage() {
   // Check authentication status and redirect if needed
   useEffect(() => {
     if (user) {
-      router.replace("/dashboard"); // Use replace instead of push to prevent back button issues
+      router.replace("/"); // Use replace instead of push to prevent back button issues
     }
   }, [user, router]);
 
