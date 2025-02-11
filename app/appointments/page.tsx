@@ -36,7 +36,7 @@ export default function AppointmentsPage() {
       setLoading(true)
       setError(null)
       try {
-        const response = await fetch(`/api/appointments`, { method: "GET" })
+        const response = await fetch(`/api/appointment`, { method: "GET" })
 
         if (!response.ok) {
           throw new Error(`Failed to fetch appointments: ${response.statusText}`)
