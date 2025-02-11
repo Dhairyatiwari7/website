@@ -43,46 +43,35 @@ export default function LoginPage() {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage(""); // Reset errors
-    setIsLoading(true); // Start loading
-  
-    if (!role) {
-      setErrorMessage("Please select a role");
-      setIsLoading(false);
-      return;
-    }
-  
+    setErrorMessage(""); // Reset error message before request
+
     const endpoint = isLogin ? "/api/auth/login" : "/api/auth/signup";
-  
+
     try {
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password, role }),
       });
-  
+
       const data = await response.json();
-  
+
       if (response.ok) {
         console.log("Success:", data.message);
         if (data.user) {
           localStorage.setItem("user", JSON.stringify(data.user));
           router.push("/");
-          window.location.reload();
         } else {
           setErrorMessage("Unexpected server response. Please try again.");
         }
       } else {
-        setErrorMessage(data.message || data.error || "An error occurred");
+        setErrorMessage(data.message || "An error occurred");
       }
     } catch (error) {
       console.error("Fetch error:", error);
       setErrorMessage("Network error occurred");
-    } finally {
-      setIsLoading(false); // Stop loading
     }
   };
-  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-sky-100 relative overflow-hidden">

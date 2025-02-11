@@ -4,6 +4,12 @@ import { useState, useEffect } from "react"
 import { Search, ShoppingCart, Pill, AmbulanceIcon as FirstAid, Stethoscope, Thermometer, Heart, Droplets, Tablets, Syringe } from "lucide-react"
 
 // Types for our data structures
+
+interface ImageDimensions {
+  width: number;
+  height: number;
+}
+
 interface Medicine {
   id: string
   name: string
@@ -11,6 +17,7 @@ interface Medicine {
   price: number
   image: string
   category: string
+  imageDimensions?: ImageDimensions;
 }
 
 interface CartItem extends Medicine {
@@ -23,160 +30,164 @@ const medicineData: Medicine[] = [
     id: "1",
     name: "Paracetamol",
     description: "Pain relief and fever reduction",
-    price: 5.99,
-    image: "/api/placeholder/200/200",
-    category: "Pain Relief"
+    price: 50,
+    image: "https://5.imimg.com/data5/SELLER/Default/2022/9/IV/UY/CG/75459511/500mg-paracetamol-tablet.jpg ",
+    category: "Pain Relief",
+    imageDimensions: {
+      width: 80,
+      height: 50
+    }
   },
 {
     id: "2",
     name: "Amoxicillin",
     description: "Antibiotic for bacterial infections",
-    price: 12.99,
-    image: "/api/placeholder/200/200",
+    price: 58,
+    image: "https://5.imimg.com/data5/SELLER/Default/2024/7/437949243/TY/IL/IU/45342411/amoxicillin-capsule-500-mg-500x500.jpg",
     category: "Antibiotics"
   },
   {
     id: "3",
     name: "Ibuprofen",
     description: "Anti-inflammatory pain reliever",
-    price: 7.99,
-    image: "/api/placeholder/200/200",
+    price: 57,
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwAREe8on9MO2wK5Xu8yPdwaffpK4VEXk8nQ&s",
     category: "Pain Relief"
   },
   {
     id: "4",
     name: "Loratadine",
     description: "Antihistamine for allergies",
-    price: 8.99,
-    image: "/api/placeholder/200/200",
+    price: 60,
+    image: "https://www.remedialhealthcare.in/srcfxonl22ddd/uploads/2020/12/LORAPIL-10-TAB-scaled.jpg",
     category: "Allergy"
   },
   {
     id: "5",
     name: "Omeprazole",
     description: "Acid reflux and heartburn relief",
-    price: 15.99,
-    image: "/api/placeholder/200/200",
+    price: 65,
+    image: "https://www.padagis.com/wp-content/uploads/2024/04/915-Omeprazole.png",
     category: "Digestive Health"
   },
   {
     id: "6",
     name: "Aspirin",
     description: "Pain relief and blood thinner",
-    price: 6.99,
-    image: "/api/placeholder/200/200",
+    price: 70,
+    image: "https://image.made-in-china.com/202f0j00YjtoWGNFfAqH/Antipyretic-Analgesics-Medicine-Aspirin-Tablet-300mg.webp",
     category: "Pain Relief"
   },
   {
     id: "7",
     name: "Cetirizine",
     description: "24-hour allergy relief",
-    price: 9.99,
-    image: "/api/placeholder/200/200",
+    price: 70,
+    image: "https://www.adenhealthcare.com/wp-content/uploads/2018/07/CONIT-1.jpg",
     category: "Allergy"
   },
   {
     id: "8",
     name: "Metformin",
     description: "Diabetes management medication",
-    price: 18.99,
-    image: "/api/placeholder/200/200",
+    price: 65,
+    image: "https://images.ctfassets.net/4w8qvp17lo47/6vXaH4Y5Gw6AMEmASwGkc6/e6ff962a82811e4d160cc2d5c0d8b3cb/metformin-antidiabetic-tablets-science-photo-library.jpg",
     category: "Diabetes"
   },
   {
     id: "9",
     name: "Sertraline",
     description: "Antidepressant medication",
-    price: 25.99,
-    image: "/api/placeholder/200/200",
+    price: 85,
+    image: "https://5.imimg.com/data5/SELLER/Default/2023/8/337366367/KI/RJ/BA/7034457/sertraline-100-mg-tablets.jpg",
     category: "Mental Health"
   },
   {
     id: "10",
     name: "Vitamin D3",
     description: "Bone health supplement",
-    price: 11.99,
-    image: "/api/placeholder/200/200",
+    price: 110,
+    image: "https://images.ctfassets.net/4w8qvp17lo47/6vXaH4Y5Gw6AMEmASwGkc6/e6ff962a82811e4d160cc2d5c0d8b3cb/metformin-antidiabetic-tablets-science-photo-library.jpg",
     category: "Vitamins"
   },
   {
     id: "11",
     name: "Multivitamin Complex",
     description: "Daily essential vitamins",
-    price: 14.99,
-    image: "/api/placeholder/200/200",
+    price: 70,
+    image: "https://images-static.nykaa.com/media/catalog/product/4/7/4738bda8906091689877_1.jpg?tr=w-500",
     category: "Vitamins"
   },
   {
     id: "12",
     name: "Zinc Supplement",
     description: "Immune system support",
-    price: 8.99,
-    image: "/api/placeholder/200/200",
+    price: 60,
+    image: "https://m.media-amazon.com/images/I/511wHehPtzL.jpg",
     category: "Vitamins"
   },
   {
     id: "13",
     name: "Magnesium Citrate",
     description: "Muscle and nerve support",
-    price: 12.99,
-    image: "/api/placeholder/200/200",
+    price: 75,
+    image: "https://i5.walmartimages.com/seo/Equate-Magnesium-Citrate-Saline-Laxative-Lemon-Flavor-10-Oz_2882e8e6-5405-4620-a770-94ef0f180100_1.ce94f8aa6e0695a3e409dffefc0dfa9f.jpeg",
     category: "Minerals"
   },
   {
     id: "14",
     name: "Fish Oil Omega-3",
     description: "Heart and brain health",
-    price: 16.99,
-    image: "/api/placeholder/200/200",
+    price: 95,
+    image: "https://www.guardian.in/cdn/shop/files/1_c4089fba-5a0a-4a66-8bdd-ae11139ae426.jpg?v=1738060031&width=2048",
     category: "Supplements"
   },
   {
     id: "15",
     name: "Probiotics",
     description: "Digestive health support",
-    price: 19.99,
-    image: "/api/placeholder/200/200",
+    price: 80,
+    image: "https://inlifehealthcare.com/cdn/shop/files/front_67244fdd-5de6-4447-83ec-b92f1f8b686f.webp?v=1733139019&width=2048",
     category: "Digestive Health"
   },
   {
     id: "16",
     name: "Melatonin",
     description: "Sleep support supplement",
-    price: 10.99,
-    image: "/api/placeholder/200/200",
+    price: 100,
+    image: "https://images.ctfassets.net/4w8qvp17lo47/6vXaH4Y5Gw6AMEmASwGkc6/e6ff962a82811e4d160cc2d5c0d8b3cb/metformin-antidiabetic-tablets-science-photo-library.jpg",
     category: "Sleep Aid"
   },
   {
     id: "17",
     name: "Iron Supplement",
     description: "Anemia prevention",
-    price: 13.99,
-    image: "/api/placeholder/200/200",
+    price: 45,
+    image: "https://maharishiayurvedaindia.com/cdn/shop/files/raktda-ayurvedic-iron-supplement-maharishi-ayurveda-india-1.png?v=1692185134&width=600",
     category: "Minerals"
   },
   {
     id: "18",
     name: "Calcium + D3",
     description: "Bone strength formula",
-    price: 15.99,
-    image: "/api/placeholder/200/200",
+    price: 75,
+    image: "https://m.media-amazon.com/images/I/71Df2-WAR0L.jpg",
     category: "Minerals"
   },
   {
     id: "19",
     name: "B-Complex",
     description: "Energy and metabolism support",
-    price: 17.99,
-    image: "/api/placeholder/200/200",
+    price: 80,
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcToDFTaoTD49GRunPP35j8HFxMdlBxjcIVU7g&s",
     category: "Vitamins"
   },
   {
     id: "20",
     name: "Glucosamine",
     description: "Joint health supplement",
-    price: 21.99,
-    image: "/api/placeholder/200/200",
+    price: 90,
+    image: "https://www.metagenics.com.au/cdn/shop/files/ANZ_MG_GLIC_GlucosamineIntensiveCare_None_60_Tablets_PackFront_20240830.png?v=1726452763&width=1946",
     category: "Joint Health"
   }
 ]
@@ -246,7 +257,7 @@ function Cart({
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="font-medium">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      Rs.{(item.price * item.quantity).toFixed(2)}
                     </span>
                     <button
                       onClick={() => onRemoveItem(item.id)}
@@ -261,7 +272,7 @@ function Cart({
             <div className="border-t pt-4">
               <div className="flex justify-between mb-6">
                 <span className="font-bold">Total:</span>
-                <span className="font-bold">${totalPrice.toFixed(2)}</span>
+                <span className="font-bold">Rs.{totalPrice.toFixed(2)}</span>
               </div>
               <button
                 onClick={onCheckout}
@@ -370,7 +381,7 @@ export default function PharmacyPage() {
                 <h3 className="text-xl font-semibold mb-2">{medicine.name}</h3>
                 <p className="text-gray-600 mb-4">{medicine.description}</p>
                 <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-blue-600">${medicine.price.toFixed(2)}</span>
+                  <span className="text-2xl font-bold text-blue-600">Rs.{medicine.price.toFixed(2)}</span>
                   <button
                     onClick={() => addToCart(medicine)}
                     className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition-all transform hover:scale-105"
