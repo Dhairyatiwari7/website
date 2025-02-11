@@ -16,7 +16,12 @@ export async function POST(req: NextRequest) {
     }
 
     const { doctorId, date, time } = await req.json();
-    console.log("Received appointment data:", { doctorId, date, time, userId: token.id });
+
+    if (!doctorId || !date || !time) {
+      return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
+    }
+
+    console.log("📅 Booking appointment:", { doctorId, date, time, userId: token.id });
 
     const result = await db.collection("Appointment").insertOne({
       user: new ObjectId(token.id as string),
@@ -27,21 +32,16 @@ export async function POST(req: NextRequest) {
       createdAt: new Date()
     });
 
-    console.log("Insertion result:", result);
+    console.log("✅ Appointment booked:", result.insertedId);
 
-    if (result.acknowledged) {
-      return NextResponse.json(
-        { message: "Appointment booked successfully", appointmentId: result.insertedId },
-        { status: 201 }
-      );
-    } else {
-      throw new Error("Failed to insert appointment");
-    }
-  } catch (error) {
-    console.error("❌ Detailed booking error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { message: "Internal server error", error: errorMessage },
+      { message: "Appointment booked successfully", appointmentId: result.insertedId },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("❌ Booking error:", error);
+    return NextResponse.json(
+      { message: "Internal server error", error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }
@@ -59,8 +59,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
+    if (!token.role) {
+      console.warn("⚠️ Warning: User role is missing in token!");
+    }
+
     console.log("🔍 Fetching appointments...");
     let appointments;
+
     if (token.role === "doctor") {
       appointments = await db
         .collection("Appointment")
@@ -119,10 +124,9 @@ export async function GET(req: NextRequest) {
     console.log("✅ Appointments fetched successfully!");
     return NextResponse.json({ appointments });
   } catch (error) {
-    console.error("❌ Appointments fetch error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error("❌ Fetch error:", error);
     return NextResponse.json(
-      { message: "Internal server error", error: errorMessage },
+      { message: "Internal server error", error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }

@@ -43,12 +43,15 @@ export default function AppointmentPage() {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const res = await fetch("/api/doctors");
-        if (!res.ok) throw new Error("Failed to fetch doctors");
+        const res = await fetch("/api/doctors", { method: "GET" });
+  
+        if (!res.ok) {
+          throw new Error(`HTTP error! Status: ${res.status}`);
+        }
   
         const data = await res.json();
         console.log("Doctors fetched:", data); // Debugging
-        setDoctors(data?.doctors || []); // Fallback to empty array
+        setDoctors(data?.doctors || []);
       } catch (error) {
         console.error("Error fetching doctors:", error);
         setDoctors([]); // Prevent undefined state
@@ -56,6 +59,7 @@ export default function AppointmentPage() {
     };
     fetchDoctors();
   }, []);
+  
   
 
   useEffect(() => {
@@ -79,12 +83,12 @@ export default function AppointmentPage() {
       alert("Please login to book appointments");
       return;
     }
-
+  
     if (!selectedDoctor || !selectedDate || !selectedTime) {
       alert("Please select a doctor, date, and time");
       return;
     }
-
+  
     setLoading(true);
     try {
       const response = await fetch("/api/appointments", {
@@ -95,27 +99,28 @@ export default function AppointmentPage() {
           date: selectedDate.toISOString(),
           time: selectedTime,
           userId: user._id,
-          status: "pending"
-        })
+          status: "pending",
+        }),
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        alert("Appointment booked successfully!");
-        setSelectedDoctor(null);
-        setSelectedDate(undefined);
-        setSelectedTime(undefined);
-      } else {
-        alert(`Booking failed: ${data.message}`);
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Unknown error");
       }
+  
+      const data = await response.json();
+      alert(data.message);
+      setSelectedDoctor(null);
+      setSelectedDate(undefined);
+      setSelectedTime(undefined);
     } catch (error) {
       console.error("Booking error:", error);
-      alert("An error occurred while booking the appointment");
+      alert("An error occurred while booking the appointment: " + (error instanceof Error ? error.message : "Unknown error"));
     } finally {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
