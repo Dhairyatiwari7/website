@@ -36,7 +36,7 @@ export default function AppointmentsPage() {
       setLoading(true)
       setError(null)
       try {
-        const response = await fetch("/api/appointments", { method: "GET" })
+        const response = await fetch(`/api/appointments`, { method: "GET" })
 
         if (!response.ok) {
           throw new Error(`Failed to fetch appointments: ${response.statusText}`)
@@ -130,20 +130,14 @@ export default function AppointmentsPage() {
                 <div className="space-y-2">
                   <p>Date: {new Date(appointment.date).toLocaleDateString()}</p>
                   <p>Time: {appointment.time}</p>
-                  <p className="capitalize">
-                    Status:{" "}
-                    <span
-                      className={`inline-block px-2 py-1 rounded-full text-sm ${
-                        appointment.status === "confirmed"
-                          ? "bg-green-100 text-green-800"
-                          : appointment.status === "cancelled"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-yellow-100 text-yellow-800"
-                      }`}
-                    >
-                      {appointment.status}
-                    </span>
-                  </p>
+                  <p className="capitalize">Status: <span 
+                    className={`inline-block px-2 py-1 rounded-full text-sm ${
+                      appointment.status === "confirmed" ? "bg-green-100 text-green-800" :
+                      appointment.status === "cancelled" ? "bg-red-100 text-red-800" :
+                      "bg-yellow-100 text-yellow-800"
+                    }`}>
+                    {appointment.status}
+                  </span></p>
                 </div>
               </CardContent>
             </Card>
