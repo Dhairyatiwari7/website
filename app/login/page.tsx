@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useAuth } from "../contexts/AuthContext";
 import { HeartPulse, Stethoscope, UserCircle } from "lucide-react";
 
 export default function LoginPage() {
@@ -16,108 +17,161 @@ export default function LoginPage() {
   const [role, setRole] = useState("user");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-
+  const { login, user } = useAuth(); // Also get the user state
   const router = useRouter();
-  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Redirect if user is already logged in
+  const containerRef = useRef<HTMLDivElement>(null);
+  const ecgLineRef = useRef<SVGPathElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
+  const roleFieldRef = useRef<HTMLDivElement>(null);
+
+  // Check authentication status and redirect if needed
   useEffect(() => {
-    const storedUser = localStorage.getItem("User");
-    if (storedUser) {
-      router.push("/");
+    if (user) {
+      router.replace("/dashboard"); // Use replace instead of push to prevent back button issues
     }
-  }, [router]);
+  }, [user, router]);
 
   // Initialize animations
   useEffect(() => {
     gsap.from(".auth-card", { duration: 1, scale: 0.8, opacity: 0, ease: "power3.out" });
+    gsap.from(".decorative-element", { duration: 1.5, scale: 0, rotation: 180, stagger: 0.2, ease: "elastic.out(1, 0.5)" });
+    gsap.to(".floating-element", { y: 15, duration: 2, repeat: -1, yoyo: true, ease: "power1.inOut" });
   }, []);
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage(""); // Reset error
-    setIsLoading(true);  // Start loading
-
-    const endpoint = isLogin ? "/api/auth/login" : "/api/auth/signup";
-    const payload = isLogin ? { username, password } : { username, password, role };
+    setErrorMessage("");
+    setIsLoading(true);
 
     try {
+      const endpoint = isLogin ? "/api/auth/login" : "/api/auth/signup";
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ username, password, role }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem("User", JSON.stringify(data.User));
-        router.push("/");
-        window.location.reload();
+        await login(data.user); // Wait for login to complete
+        router.replace("/dashboard"); // Redirect to dashboard after successful login
       } else {
-        setErrorMessage(data.message || "An error occurred");
+        setErrorMessage(data.message || "Authentication failed");
       }
     } catch (error) {
+      console.error("Authentication error:", error);
       setErrorMessage("Network error occurred");
     } finally {
       setIsLoading(false);
     }
   };
 
+  // If we're already authenticated, show nothing while redirecting
+  if (user) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-sky-100 relative overflow-hidden">
-      <div className="auth-card bg-white p-8 rounded-xl shadow-2xl w-96">
-        <div className="text-center mb-8">
-          <HeartPulse className="h-16 w-16 text-blue-600 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-800">{isLogin ? "Welcome Back!" : "Join QuickCare"}</h2>
-          <p className="text-gray-600">{isLogin ? "Secure access to your health portal" : "Start your health journey today"}</p>
-        </div>
+      {/* Rest of your JSX remains the same */}
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-10 bg-pattern" style={{ backgroundImage: `radial-gradient(circle at 10% 10%, #3B82F622 20%, transparent 20%)`, backgroundSize: "40px 40px" }} />
 
-        {errorMessage && <p className="text-red-500 text-sm text-center mb-4">{errorMessage}</p>}
+      {/* Floating Medical Icons */}
+      <HeartPulse className="absolute top-1/4 left-20 text-blue-200/30 floating-element h-16 w-16 decorative-element" />
+      <Stethoscope className="absolute top-1/3 right-32 text-blue-200/30 floating-element h-16 w-16 decorative-element" />
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div>
-            <Label htmlFor="username" className="flex items-center gap-2 text-gray-700">
-              <UserCircle className="h-4 w-4" />
-              Username
-            </Label>
-            <Input type="text" id="username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Enter your username" />
-          </div>
-
-          <div>
-            <Label htmlFor="password" className="flex items-center gap-2 text-gray-700">
-              Password
-            </Label>
-            <Input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" />
-          </div>
-
-          {!isLogin && (
-            <div>
-              <Label className="block mb-2 text-gray-700">Register as:</Label>
-              <RadioGroup value={role} onValueChange={setRole}>
-                {["user", "doctor"].map((r) => (
-                  <div key={r} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-blue-50 transition-colors">
-                    <RadioGroupItem value={r} id={r} />
-                    <Label htmlFor={r} className="flex-1">{r.charAt(0).toUpperCase() + r.slice(1)}</Label>
-                    {r === "doctor" ? <Stethoscope className="h-4 w-4 text-blue-600" /> : <UserCircle className="h-4 w-4 text-blue-600" />}
-                  </div>
-                ))}
-              </RadioGroup>
+      {/* Main Card */}
+      <div ref={containerRef} className="auth-card bg-white p-8 rounded-xl shadow-2xl w-96 relative z-10 border border-blue-50">
+        <div ref={formRef} className="login-content">
+          <div className="text-center mb-8">
+            <div className="inline-block">
+              <HeartPulse className="h-16 w-16 text-blue-600 mx-auto mb-4 decorative-element" />
             </div>
-          )}
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">{isLogin ? "Welcome Back!" : "Join QuickCare"}</h2>
+            <p className="text-gray-600">{isLogin ? "Secure access to your health portal" : "Start your health journey today"}</p>
+          </div>
 
-          <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg" disabled={isLoading}>
-            {isLoading ? "Processing..." : isLogin ? "Sign In" : "Create Account"}
-          </Button>
-        </form>
+          {errorMessage && <p className="text-red-500 text-sm text-center mb-4">{errorMessage}</p>}
 
-        <p className="text-center mt-6 text-gray-600">
-          {isLogin ? "New here? " : "Already have an account? "}
-          <button onClick={() => setIsLogin(!isLogin)} className="text-blue-600 font-semibold hover:underline">
-            {isLogin ? "Create Account" : "Login Instead"}
-          </button>
-        </p>
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <div className="login-content">
+              <Label htmlFor="username" className="flex items-center gap-2 text-gray-700">
+                <UserCircle className="h-4 w-4" />
+                Username
+              </Label>
+              <Input 
+                type="text" 
+                id="username" 
+                value={username} 
+                onChange={(e) => setUsername(e.target.value)} 
+                className="mt-1 focus-visible:ring-blue-500" 
+                placeholder="Enter your username"
+                required 
+              />
+            </div>
+
+            <div className="login-content">
+              <Label htmlFor="password" className="flex items-center gap-2 text-gray-700">
+                Password
+              </Label>
+              <Input 
+                type="password" 
+                id="password" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                className="mt-1 focus-visible:ring-blue-500" 
+                placeholder="Enter your password"
+                required
+                minLength={6}
+              />
+            </div>
+
+            {!isLogin && (
+              <div ref={roleFieldRef} className="login-content overflow-hidden">
+                <Label className="block mb-2 text-gray-700">Register as:</Label>
+                <RadioGroup value={role} onValueChange={setRole} className="grid gap-2">
+                  {["user", "doctor"].map((r) => (
+                    <div key={r} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-blue-50 transition-colors hover:scale-[1.02]">
+                      <RadioGroupItem value={r} id={r} />
+                      <Label htmlFor={r} className="flex-1">{r.charAt(0).toUpperCase() + r.slice(1)}</Label>
+                      {r === "doctor" ? <Stethoscope className="h-4 w-4 text-blue-600" /> : <UserCircle className="h-4 w-4 text-blue-600" />}
+                    </div>
+                  ))}
+                </RadioGroup>
+              </div>
+            )}
+
+            <Button 
+              type="submit" 
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 login-content" 
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Processing...
+                </div>
+              ) : (
+                isLogin ? "Sign In" : "Create Account"
+              )}
+            </Button>
+          </form>
+
+          <p className="login-content text-center mt-6 text-gray-600">
+            {isLogin ? "New here? " : "Already have an account? "}
+            <button 
+              onClick={() => setIsLogin(!isLogin)} 
+              className="text-blue-600 font-semibold hover:underline underline-offset-4"
+              type="button"
+            >
+              {isLogin ? "Create Account" : "Login Instead"}
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );
