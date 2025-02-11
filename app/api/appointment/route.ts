@@ -3,6 +3,12 @@ import clientPromise from "../../lib/db";
 import { ObjectId } from "mongodb";
 import { getToken } from "next-auth/jwt";
 
+// ✅ Allow CORS and OPTIONS method
+export async function OPTIONS() {
+  return NextResponse.json({ message: "Allowed Methods: GET, POST" }, { status: 200 });
+}
+
+// ✅ Handle Appointment Booking (POST)
 export async function POST(req: NextRequest) {
   try {
     console.log("🔹 Connecting to MongoDB...");
@@ -10,13 +16,11 @@ export async function POST(req: NextRequest) {
     const db = client.db("test");
 
     const token = await getToken({ req });
-
     if (!token) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const { doctorId, date, time } = await req.json();
-
     if (!doctorId || !date || !time) {
       return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
     }
@@ -33,7 +37,6 @@ export async function POST(req: NextRequest) {
     });
 
     console.log("✅ Appointment booked:", result.insertedId);
-
     return NextResponse.json(
       { message: "Appointment booked successfully", appointmentId: result.insertedId },
       { status: 201 }
@@ -47,6 +50,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
+// ✅ Handle Fetching Appointments (GET)
 export async function GET(req: NextRequest) {
   try {
     console.log("🔹 Connecting to MongoDB...");
@@ -54,13 +58,8 @@ export async function GET(req: NextRequest) {
     const db = client.db("test");
 
     const token = await getToken({ req });
-
     if (!token) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    if (!token.role) {
-      console.warn("⚠️ Warning: User role is missing in token!");
     }
 
     console.log("🔍 Fetching appointments...");
