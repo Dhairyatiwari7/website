@@ -21,18 +21,18 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-interface Doctor {
-  _id: string;
-  name: string;
-  speciality: string;
-  imageUrl?: string;
-  fees: number;
-  availability: string;
-  rating: number;
-}
-
 export default function AppointmentPage() {
   const { user } = useAuth();
+  interface Doctor {
+    _id: string;
+    name: string;
+    speciality: string;
+    imageUrl?: string;
+    fees: number;
+    availability: string;
+    rating: number;
+  }
+  
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
@@ -43,24 +43,15 @@ export default function AppointmentPage() {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const res = await fetch("/api/doctors", { method: "GET" });
-  
-        if (!res.ok) {
-          throw new Error(`HTTP error! Status: ${res.status}`);
-        }
-  
+        const res = await fetch("/api/doctors");
         const data = await res.json();
-        console.log("Doctors fetched:", data); // Debugging
-        setDoctors(data?.doctors || []);
+        setDoctors(data.doctors);
       } catch (error) {
         console.error("Error fetching doctors:", error);
-        setDoctors([]); // Prevent undefined state
       }
     };
     fetchDoctors();
   }, []);
-  
-  
 
   useEffect(() => {
     gsap.from(".appointment-content", {
@@ -76,19 +67,19 @@ export default function AppointmentPage() {
     (doctor) =>
       doctor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       doctor.speciality.toLowerCase().includes(searchTerm.toLowerCase())
-  );  
+  );
 
   const handleBookAppointment = async () => {
     if (!user) {
       alert("Please login to book appointments");
       return;
     }
-  
+
     if (!selectedDoctor || !selectedDate || !selectedTime) {
       alert("Please select a doctor, date, and time");
       return;
     }
-  
+
     setLoading(true);
     try {
       const response = await fetch("/api/appointments", {
@@ -98,29 +89,26 @@ export default function AppointmentPage() {
           doctorId: selectedDoctor._id,
           date: selectedDate.toISOString(),
           time: selectedTime,
-          userId: user._id,
-          status: "pending",
-        }),
+          userId: user.id,
+          status: "pending"
+        })
       });
-  
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Unknown error");
+
+      if (response.ok) {
+        alert("Appointment booked successfully!");
+        setSelectedDoctor(null);
+        setSelectedDate(undefined);
+        setSelectedTime(undefined);
+      } else {
+        alert("Booking failed");
       }
-  
-      const data = await response.json();
-      alert(data.message);
-      setSelectedDoctor(null);
-      setSelectedDate(undefined);
-      setSelectedTime(undefined);
     } catch (error) {
       console.error("Booking error:", error);
-      alert("An error occurred while booking the appointment: " + (error instanceof Error ? error.message : "Unknown error"));
+      alert("An error occurred while booking the appointment");
     } finally {
       setLoading(false);
     }
   };
-  
 
   return (
     <div className="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8">

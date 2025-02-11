@@ -7,6 +7,12 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useAuth } from "../contexts/AuthContext"
 
+type User = {
+  id: string
+  username: string
+  role: "patient" | "doctor"
+}
+
 type Doctor = {
   _id: string
   name: string
@@ -21,6 +27,7 @@ type Appointment = {
   time: string
   status: "pending" | "confirmed" | "cancelled"
   doctor?: Doctor
+  user?: User
 }
 
 export default function AppointmentsPage() {
@@ -36,17 +43,10 @@ export default function AppointmentsPage() {
       setLoading(true)
       setError(null)
       try {
-        const response = await fetch(`/api/appointments`, { method: "GET" })
-
+        const response = await fetch(`/api/appointments${user.role === "doctor" ? "/doctor" : ""}?userId=${user.id}`)
         if (!response.ok) {
-          throw new Error(`Failed to fetch appointments: ${response.statusText}`)
+          throw new Error("Failed to fetch appointments")
         }
-
-        const contentType = response.headers.get("content-type")
-        if (!contentType || !contentType.includes("application/json")) {
-          throw new Error("Invalid JSON response from server")
-        }
-
         const data = await response.json()
         setAppointments(data.appointments || [])
       } catch (error) {
@@ -119,7 +119,7 @@ export default function AppointmentsPage() {
               <CardHeader>
                 <CardTitle>
                   {user.role === "doctor"
-                    ? `Patient: ${appointment.userId}`
+                    ? `Patient: ${appointment.user?.username || "Unknown Patient"}`
                     : `Doctor: ${appointment.doctor?.name || "Unknown Doctor"}`}
                 </CardTitle>
                 <CardDescription>
@@ -135,7 +135,8 @@ export default function AppointmentsPage() {
                       appointment.status === "confirmed" ? "bg-green-100 text-green-800" :
                       appointment.status === "cancelled" ? "bg-red-100 text-red-800" :
                       "bg-yellow-100 text-yellow-800"
-                    }`}>
+                    }`}
+                  >
                     {appointment.status}
                   </span></p>
                 </div>
