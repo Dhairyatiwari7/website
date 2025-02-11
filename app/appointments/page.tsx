@@ -36,11 +36,17 @@ export default function AppointmentsPage() {
       setLoading(true)
       setError(null)
       try {
-        if (!user) return
-        const response = await fetch(`/api/appointments${user?.role === "doctor" ? "/doctor" : ""}?userId=${user?._id}`)
+        const response = await fetch(`/api/appointments`, { method: "GET" })
+
         if (!response.ok) {
-          throw new Error("Failed to fetch appointments")
+          throw new Error(`Failed to fetch appointments: ${response.statusText}`)
         }
+
+        const contentType = response.headers.get("content-type")
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("Invalid JSON response from server")
+        }
+
         const data = await response.json()
         setAppointments(data.appointments || [])
       } catch (error) {
@@ -129,8 +135,7 @@ export default function AppointmentsPage() {
                       appointment.status === "confirmed" ? "bg-green-100 text-green-800" :
                       appointment.status === "cancelled" ? "bg-red-100 text-red-800" :
                       "bg-yellow-100 text-yellow-800"
-                    }`}
-                  >
+                    }`}>
                     {appointment.status}
                   </span></p>
                 </div>
