@@ -4,9 +4,10 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface User {
-  username: string;
-  role: "doctor" | "user";
-  _id: string; // Add _id
+  _id: string;
+  name: string;
+  email: string;
+  role: "doctor" | "patient";
 }
 
 interface AuthContextType {
@@ -26,12 +27,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
-  },);
+  }, []);
 
   const login = (userData: User) => {
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
-    router.push("/"); // Redirect within login function
+    router.push("/");
   };
 
   const logout = () => {

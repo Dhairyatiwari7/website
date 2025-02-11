@@ -7,12 +7,6 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useAuth } from "../contexts/AuthContext"
 
-type User = {
-  id: string
-  username: string
-  role: "patient" | "doctor"
-}
-
 type Doctor = {
   _id: string
   name: string
@@ -27,7 +21,6 @@ type Appointment = {
   time: string
   status: "pending" | "confirmed" | "cancelled"
   doctor?: Doctor
-  user?: User
 }
 
 export default function AppointmentsPage() {
@@ -44,7 +37,7 @@ export default function AppointmentsPage() {
       setError(null)
       try {
         if (!user) return
-        const response = await fetch(`/api/appointments${user.role === "doctor" ? "/doctor" : ""}?userId=${user.id}`)
+        const response = await fetch(`/api/appointments${user?.role === "doctor" ? "/doctor" : ""}?userId=${user?._id}`)
         if (!response.ok) {
           throw new Error("Failed to fetch appointments")
         }
@@ -120,7 +113,7 @@ export default function AppointmentsPage() {
               <CardHeader>
                 <CardTitle>
                   {user.role === "doctor"
-                    ? `Patient: ${appointment.user?.username || "Unknown Patient"}`
+                    ? `Patient: ${appointment.userId}`
                     : `Doctor: ${appointment.doctor?.name || "Unknown Doctor"}`}
                 </CardTitle>
                 <CardDescription>

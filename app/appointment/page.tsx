@@ -21,18 +21,18 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+interface Doctor {
+  _id: string;
+  name: string;
+  speciality: string;
+  imageUrl?: string;
+  fees: number;
+  availability: string;
+  rating: number;
+}
+
 export default function AppointmentPage() {
   const { user } = useAuth();
-  interface Doctor {
-    _id: string;
-    name: string;
-    speciality: string;
-    imageUrl?: string;
-    fees: number;
-    availability: string;
-    rating: number;
-  }
-  
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
@@ -89,10 +89,12 @@ export default function AppointmentPage() {
           doctorId: selectedDoctor._id,
           date: selectedDate.toISOString(),
           time: selectedTime,
-          userId: user.id,
+          userId: user._id,
           status: "pending"
         })
       });
+
+      const data = await response.json();
 
       if (response.ok) {
         alert("Appointment booked successfully!");
@@ -100,7 +102,7 @@ export default function AppointmentPage() {
         setSelectedDate(undefined);
         setSelectedTime(undefined);
       } else {
-        alert("Booking failed");
+        alert(`Booking failed: ${data.message}`);
       }
     } catch (error) {
       console.error("Booking error:", error);
