@@ -44,14 +44,19 @@ export default function AppointmentPage() {
     const fetchDoctors = async () => {
       try {
         const res = await fetch("/api/doctors");
+        if (!res.ok) throw new Error("Failed to fetch doctors");
+  
         const data = await res.json();
-        setDoctors(data.doctors);
+        console.log("Doctors fetched:", data); // Debugging
+        setDoctors(data?.doctors || []); // Fallback to empty array
       } catch (error) {
         console.error("Error fetching doctors:", error);
+        setDoctors([]); // Prevent undefined state
       }
     };
     fetchDoctors();
   }, []);
+  
 
   useEffect(() => {
     gsap.from(".appointment-content", {

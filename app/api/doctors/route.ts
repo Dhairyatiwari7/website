@@ -7,29 +7,8 @@ export async function GET() {
     console.log("🔹 Connecting to MongoDB...");
     const client = await clientPromise;
     const db = client.db("test"); // Ensure this matches your database name
-
-    console.log("🔎 Fetching doctors...");
-    const doctors = await db.collection("doctors").find({}, { 
-      projection: { 
-        password: 0,
-        _id: 1,
-        name: 1,
-        speciality: 1,
-        fees: 1,
-        availability: 1,
-        rating: 1,
-        imageUrl: 1
-      } 
-    }).toArray();
-
-    // Convert _id to string for easier handling in frontend
-    const formattedDoctors = doctors.map(doctor => ({
-      ...doctor,
-      _id: doctor._id.toString()
-    }));
-
-    console.log(`✅ ${formattedDoctors.length} doctors fetched successfully!`);
-    return NextResponse.json({ doctors: formattedDoctors });
+    const doctors = await db.collection("doctors").find({}).toArray();
+    return NextResponse.json({ doctors: doctors || [] }); 
 
   } catch (error) {
     console.error("❌ Doctors fetch error:", error);
